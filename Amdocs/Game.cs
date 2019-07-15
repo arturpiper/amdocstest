@@ -1,38 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
-using Amdocs.Helpers;
+using System.Linq;
 
 namespace Amdocs
 {
     public class Game
     {
+        private readonly int _minParticipants;
+        private readonly int _maxParticipants;
+        private readonly double _maxMargin;
+        private readonly double _minMargin;
+
         private readonly List<Horse> _horses;
+
         private int HorseCount { get; set; }
         private double Margin { get; set; }
 
-        public Game()
+
+        public Game(int minParticipants, int maxParticipants, double minMargin, double maxMargin)
         {
+            if (minParticipants < 1 || maxParticipants < 1 || minParticipants > maxParticipants || maxMargin < minMargin)
+            {
+                throw new ArgumentException("Please check game parameters");
+            }
+
+            _minParticipants = minParticipants;
+            _maxParticipants = maxParticipants;
+            _maxMargin = maxMargin;
+            _minMargin = minMargin;
+
             _horses = new List<Horse>();
         }
 
-        public void Run(int minParticipants, int maxParticipants)
+
+        public void Run()
         {
-            ConfigureHorsesCount(minParticipants, maxParticipants);
+            ConfigureHorsesCount();
             PrepareHorses(_horses);
-            Margin = GameHelpers.CalculateMargin(_horses);
-            
-            if (Margin < 110 || Margin > 140)
+            Margin = Helpers.CalculateMargin(_horses);
+
+            if (Margin < _minMargin || Margin > _maxMargin)
             {
-                Console.WriteLine(string.Format("Cannot play with this margin: {0}%", Margin));
+                Console.WriteLine($"Cannot play with this margin: {Margin}%");
                 return;
             }
 
             CalculateChances(_horses, Margin);
 
-            var winner = GameHelpers.CalculateWinner(_horses);
+            var winner = Helpers.CalculateWinner(_horses);
 
             Console.Clear();
-            Console.WriteLine(string.Format("the winner is horse {0} with chances to win: {1}", winner.Name, winner.ChancesToWin));
+            Console.WriteLine($"the winner is horse {winner.Name} with chances to win: {winner.ChancesToWin}%");
         }
 
 
@@ -45,18 +63,18 @@ namespace Amdocs
         }
 
 
-        private void PrepareHorses(ICollection<Horse> horses)
+        private void PrepareHorses(List<Horse> horses)
         {
             for (var horseIndex = 1; horseIndex <= HorseCount; horseIndex++)
             {
                 var horse = new Horse();
 
                 Console.Clear();
-                Console.WriteLine(string.Format("Please give horse nr {0}. a name (max 18 symbols A-Z): ", horseIndex));
+                Console.WriteLine($"Please give horse nr {horseIndex}. a name (max 18 symbols A-Z): ");
 
-                while (!horse.TrySetName(Console.ReadLine()))
+                while (!horse.TrySetName(Console.ReadLine()) || horses.Any(h => h.Name == horse.Name))
                 {
-                    Console.WriteLine("\nInvalid input. Please try again: ");
+                    Console.WriteLine("\nInvalid input or there is already a horse with this name. Please try again: ");
                 }
 
                 Console.Clear();
@@ -66,21 +84,17 @@ namespace Amdocs
                 {
                     Console.WriteLine("\nInvalid input. Please try again: ");
                 }
-                
+
                 horses.Add(horse);
             }
         }
 
-        private void ConfigureHorsesCount(int minParticipants, int maxParticipants)
-        {
-            if (minParticipants < 1 || maxParticipants < 1)
-            {
-                throw new ArgumentException("There should be at least 1 participant");
-            }
 
+        private void ConfigureHorsesCount()
+        {
             var inputCount = int.MinValue;
-            Console.WriteLine(string.Format("Please enter participant horses count from {0} to {1} and press ENTER", minParticipants, maxParticipants));
-            while (!int.TryParse(Console.ReadLine(), out inputCount) || inputCount > maxParticipants || inputCount < minParticipants)
+            Console.WriteLine($"Please enter participant horses count from {_minParticipants} to {_maxParticipants} and press ENTER");
+            while (!int.TryParse(Console.ReadLine(), out inputCount) || inputCount > _maxParticipants || inputCount < _minParticipants)
             {
                 Console.WriteLine("\nInvalid input. Please try again: ");
             }

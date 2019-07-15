@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Amdocs.Helpers;
 using Xunit;
 
 namespace Amdocs.Tests
@@ -9,6 +8,7 @@ namespace Amdocs.Tests
         [Fact]
         public void AssertThatAllParticipantsWinTheirPercentage()
         {
+            // Setup
             var gamePlays = 1000000;
             var horses = GetMockedHorses(true);
             var horseExpectedWins = new int[horses.Count];
@@ -20,9 +20,11 @@ namespace Amdocs.Tests
                 horseWins[i] = 0;
             }
 
+            // Act
+
             for (var i = 0; i < gamePlays; i++)
             {
-                var winner = GameHelpers.CalculateWinner(horses);
+                var winner = Helpers.CalculateWinner(horses);
                 var winnerId = 0;
                 foreach (var horse in horses)
                 {
@@ -37,7 +39,8 @@ namespace Amdocs.Tests
                 horseWins[winnerId]++;
             }
 
-            for(int i = 0; i < horseExpectedWins.Length; i++)
+            // Assert
+            for (var i = 0; i < horses.Count; i++)
             {
                 Assert.InRange(horseWins[i], horseExpectedWins[i] - gamePlays * 0.02, horseExpectedWins[i] + gamePlays * 0.02);
             }
@@ -46,16 +49,15 @@ namespace Amdocs.Tests
 
         private List<Horse> GetMockedHorses(bool calculateMargin)
         {
-            var horses = new List<Horse>()
+            var horses = new List<Horse>();
+            for (var i = 0; i < 4; i++)
             {
-                new Horse(),
-                new Horse(),
-                new Horse(),
-                new Horse()
-            };
+                horses.Add(new Horse());
+            }
 
-            horses[0].TrySetOddsPrice("1/2");
-            horses[1].TrySetOddsPrice("2/1");
+
+            horses[0].TrySetOddsPrice("2/1");
+            horses[1].TrySetOddsPrice("1/2");
             horses[2].TrySetOddsPrice("3/1");
             horses[3].TrySetOddsPrice("8/1");
 
@@ -64,7 +66,7 @@ namespace Amdocs.Tests
             horses[2].TrySetName("AC");
             horses[3].TrySetName("AD");
 
-            double margin = calculateMargin ? GameHelpers.CalculateMargin(horses) : 136.11;
+            var margin = calculateMargin ? Helpers.CalculateMargin(horses) : 136.11;
 
             foreach (var horse in horses)
             {

@@ -10,10 +10,22 @@ namespace Amdocs
         public int OddsPriceY { get; private set; }
         public double ChancesToWin { get; private set; }
 
+        public double PossibilityRangeMin { get; private set; }
+        public double PossibilityRangeMax { get; private set; }
+
+
+        public void SetPossibilityRange(double min, double offset)
+        {
+            PossibilityRangeMin = min;
+            PossibilityRangeMax = min + offset;
+        }
+
+
         public void CalculateChancesToWin(double margin)
         {
-            ChancesToWin = Math.Round(100 / ((double) OddsPriceX / OddsPriceY + 1) / margin * 100, 2);
-        } 
+            ChancesToWin = Math.Round(100 / ((double)OddsPriceX / OddsPriceY + 1) / margin * 100, 2);
+        }
+
 
         public bool TrySetName(string name)
         {
@@ -26,12 +38,14 @@ namespace Amdocs
             return true;
         }
 
+
         public bool TrySetOddsPrice(string oddsPrice)
         {
             if (!Regex.IsMatch(oddsPrice, "^[1-9][0-9]*[/][1-9][0-9]*$"))
             {
                 return false;
             }
+
             var oddsPriceParts = Regex.Split(oddsPrice, "/");
             OddsPriceX = int.Parse(oddsPriceParts[0]);
             OddsPriceY = int.Parse(oddsPriceParts[1]);
